@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>GCSE Revision Pro</title>
+    <style>
+        :root {
+            --bg: #f4f6f8;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #94a3b8;
+            --sidebar-active: #ffffff;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #3b82f6;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --green: #10b981;
+            --rest: #8b5cf6;
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { margin: 0; background: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar Navigation */
+        #sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        #sidebar .logo { padding: 25px 20px; font-weight: 800; font-size: 1.4em; letter-spacing: -0.5px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        #sidebar nav { flex: 1; overflow-y: auto; padding-top: 10px; }
+        #sidebar a { padding: 15px 20px; color: var(--sidebar-text); text-decoration: none; display: flex; align-items: center; gap: 12px; font-size: 0.95em; cursor: pointer; transition: 0.2s; }
+        #sidebar a:hover { color: var(--sidebar-active); background: rgba(255,255,255,0.05); }
+        #sidebar a.active { color: var(--sidebar-active); background: rgba(59, 130, 246, 0.1); border-left: 4px solid var(--primary); font-weight: 600; }
+        
+        /* Main Content */
+        #main-content { flex: 1; overflow-y: auto; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
+        .header h1 { margin: 0; font-size: 1.8em; }
+        .header p { margin: 5px 0 0 0; color: var(--text-muted); }
+        
+        /* Layout Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        
+        /* Cards */
+        .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid var(--border); }
+        .task-card { position: relative; border-left: 6px solid var(--border); cursor: pointer; transition: transform 0.2s; }
+        .task-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        .rag-red { border-left-color: var(--red); }
+        .rag-amber { border-left-color: var(--amber); }
+        .rag-green { border-left-color: var(--green); }
+        .task-rest { border-left-color: var(--rest); text-align: center; background: rgba(139, 92, 246, 0.05); }
+        
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.8em; font-weight: 600; margin-bottom: 8px; }
+        .badge.red { background: #fee2e2; color: #991b1b; }
+        .badge.amber { background: #fef3c7; color: #92400e; }
+        .badge.green { background: #d1fae5; color: #065f46; }
+        
+        .task-subject { font-weight: 700; font-size: 1.1em; margin-bottom: 4px; }
+        .task-topic { color: var(--text-muted); font-size: 0.95em; margin-bottom: 15px; line-height: 1.4; }
+        
+        /* Buttons */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        button { padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.85em; transition: 0.2s; }
+        .btn-complete { background: var(--green); color: white; }
+        .btn-complete:hover { background: #059669; }
+        .btn-catchup { background: var(--amber); color: white; }
+        .btn-catchup:hover { background: #d97706; }
+        
+        /* View specific */
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; }
+        .modal-close { float: right; cursor: pointer; font-size: 1.5em; line-height: 1; margin-top: -5px; }
+
+        @media(max-width: 768px) {
+            body { flex-direction: column; }
+            #sidebar { width: 100%; height: auto; flex-direction: row; flex-shrink: 0; overflow-x: auto; padding: 0; }
+            #sidebar .logo { display: none; }
+            #sidebar nav { display: flex; padding: 0; }
+            #sidebar a { padding: 15px; white-space: nowrap; border-left: none; border-bottom: 4px solid transparent; }
+            #sidebar a.active { border-left: none; border-bottom: 4px solid var(--primary); }
+            #main-content { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div class="logo">GCSE Planner Pro</div>
+        <nav>
+            <a onclick="navigate('today')" id="nav-today" class="active">🏠 Today</a>
+            <a onclick="navigate('timetable')" id="nav-timetable">📅 Timetable</a>
+            <a onclick="navigate('catchup')" id="nav-catchup">🔄 Catch-up</a>
+            <a onclick="navigate('homework')" id="nav-homework">📝 Homework</a>
+            <a onclick="navigate('flashcards')" id="nav-flashcards">🧠 Flashcards</a>
+            <a onclick="navigate('songs')" id="nav-songs">🎵 Songs</a>
+            <a onclick="navigate('progress')" id="nav-progress">📊 Progress</a>
+            <a onclick="navigate('settings')" id="nav-settings">💾 Data / Export</a>
+        </nav>
+    </div>
+
+    <div id="main-content">
+        <!-- TODAY VIEW -->
+        <div id="view-today" class="view-section active">
+            <div class="header">
+                <div>
+                    <h1>Today's Revision</h1>
+                    <p id="today-date-display">Loading...</p>
+                </div>
+            </div>
+            <h3 id="phase-banner" style="color: var(--primary); margin-top: 0;"></h3>
+            <div id="today-tasks" class="grid">
+                <!-- Tasks injected here via JS -->
+            </div>
+        </div>
+
+        <!-- TIMETABLE VIEW -->
+        <div id="view-timetable" class="view-section">
+            <div class="header">
+                <div>
+                    <h1>Full Timetable</h1>
+                    <p>Master Schedule: 5 Oct 2026 - 18 Jun 2027</p>
+                </div>
+                <input type="date" id="date-picker" onchange="jumpToDate()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border);">
+            </div>
+            <div id="timetable-list">
+                <!-- List injected here -->
+            </div>
+        </div>
+
+        <!-- CATCH UP VIEW -->
+        <div id="view-catchup" class="view-section">
+            <div class="header">
+                <div>
+                    <h1>Catch-up Queue 🔄</h1>
+                    <p>Tasks you missed or moved to later.</p>
+                </div>
+            </div>
+            <div id="catchup-tasks" class="grid"></div>
+        </div>
+
+        <!-- HOMEWORK VIEW -->
+        <div id="view-homework" class="view-section">
+            <div class="header">
+                <div>
+                    <h1>Homework Log 📝</h1>
+                    <p>Track Sparx, Seneca, and school assignments.</p>
+                </div>
+                <button onclick="document.getElementById('hw-modal').classList.add('active')" style="background: var(--primary); color: white;">+ Add Homework</button>
+            </div>
+            <div id="homework-list" class="grid"></div>
+        </div>
+
+        <!-- PLACEHOLDER VIEWS FOR OTHER MODULES -->
+        <div id="view-flashcards" class="view-section"><div class="header"><h1>Flashcards 🧠</h1><p>Spaced repetition decks.</p></div><p>Click "Add Deck" to begin compiling custom flashcards for your topics.</p></div>
+        <div id="view-songs" class="view-section"><div class="header"><h1>Revision Songs 🎵</h1><p>Mnemonic tracks and audios.</p></div><p>Link your memory songs to specific topics here.</p></div>
+        <div id="view-progress" class="view-section"><div class="header"><h1>Progress & Stats 📊</h1><p>Track your completion rate.</p></div><div id="stats-container" class="card"></div></div>
+        <div id="view-settings" class="view-section"><div class="header"><h1>Settings & Backup 💾</h1><p>Manage your local app data.</p></div>
+            <div class="card">
+                <h3>Backup Master Data</h3>
+                <p>Download your progress, RAGs, and catch-up queue.</p>
+                <button onclick="exportData()" style="background: var(--primary); color: white;">Export Data (.json)</button>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+                <h3>Emergency Reset</h3>
+                <button onclick="factoryReset()" style="background: var(--red); color: white;">Factory Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Homework Modal -->
+    <div id="hw-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="document.getElementById('hw-modal').classList.remove('active')">&times;</span>
+            <h2>Add Homework</h2>
+            <input type="text" id="hw-subject" placeholder="Subject (e.g., Spanish, Maths)" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+            <input type="text" id="hw-task" placeholder="Task (e.g., Sparx Module 4)" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+            <input type="date" id="hw-due" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+            <button onclick="saveHomework()" class="btn-complete" style="width: 100%; margin-top: 10px;">Save Homework</button>
+        </div>
+    </div>
+
+    <!-- RAG/Move Modal -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="document.getElementById('task-modal').classList.remove('active')">&times;</span>
+            <h2 id="modal-subject">Subject</h2>
+            <p id="modal-topic">Topic Details</p>
+            <hr>
+            <h4>Set RAG Status (Spaced Repetition)</h4>
+            <div class="btn-group">
+                <button onclick="updateRAG('red')" style="background: #fee2e2; color: #991b1b; border: 1px solid var(--red);">🔴 Weak (Review 1 day)</button>
+                <button onclick="updateRAG('amber')" style="background: #fef3c7; color: #92400e; border: 1px solid var(--amber);">🟡 Okay (Review 5 days)</button>
+                <button onclick="updateRAG('green')" style="background: #d1fae5; color: #065f46; border: 1px solid var(--green);">🟢 Confident (Review 14 days)</button>
+            </div>
+            <hr>
+            <h4>Move to Catch-Up Queue</h4>
+            <button class="btn-catchup" onclick="moveToCatchup()">Send to Catch-up Queue 🔄</button>
+        </div>
+    </div>
+
+<script>
+/* ==========================================
+   1. RAW TIMETABLE DATA (EXACT MATCH)
+============================================= */
+const rawTimetableText = `
+Mon 05 Oct
+Bio 🔴 Cell Biology — Microscopy & Cell Structures
+Maths 🟡 Algebra — Expanding & Factorising Quadratics
+Chem 🔴 Periodic Table — Electronic Structure & History
+Tue 06 Oct
+Phys 🔴 Scalars & Vectors + Energy Transfers
+Spanish 🟡 T1 — Identity & Relationships
+Eng Lit 🟡 Macbeth — Act 1: Ambition & Witches
+Wed 07 Oct
+Eng Lang 🟡 P1 Q2 — Language Methods & Semantic Fields
+Soc 🟡 Education — Functionalist Perspectives
+Food 🟡 Nutrition — Macronutrients & Functions
+Thu 08 Oct
+Chem 🔴 Atomic Structure — Isotopes & Relative Atomic Mass
+Maths 🟡 Number — Surds & Indices
+RE 🟡 Christianity — Nature of God & Creation (Essay)
+Fri 09 Oct
+Bio 🟡 Cell Biology — Eukaryotes, Prokaryotes & Mitosis
+Phys 🔴 Energy — Transfers & Efficiency
+Eng Lit 🟡 Macbeth — Act 2: Guilt & Soliloquy
+Sat 10 Oct
+Maths 🔴 Algebra — Linear & Quadratic Equations
+Chem 🔴 Bonding — Ionic & Covalent
+Spanish 🔴 Translation — Spanish → English
+Sun 11 Oct
+REST
+REST
+REST
+Mon 12 Oct
+Bio 🟡 Organisation — Digestive System Enzymes
+Maths 🔴 Simultaneous Equations
+Eng Lang 🟡 P1 Q3 — Structural Shifts
+Tue 13 Oct
+Phys 🔴 Particle Model — Density & State Changes
+Spanish 🟡 T2 — Free-Time Activities & Hobbies
+Eng Lit 🟡 Macbeth — Act 3: Banquo's Ghost
+Wed 14 Oct
+Chem 🔴 Quantitative Chemistry — Moles & Conservation of Mass
+Soc 🟡 Families — Conjugal Roles & Domestic Division
+Food 🟡 Nutrition — Micronutrients & Vitamins
+Thu 15 Oct
+Bio 🟡 Infection & Response — Pathogens
+Maths 🔴 Algebraic Fractions
+RE 🟡 Islam — Core Beliefs & Tawhid (Essay)
+Fri 16 Oct
+🎂 BIRTHDAY REST
+🎂 BIRTHDAY REST
+🎂 BIRTHDAY REST
+Sat 17 Oct
+🎂 BIRTHDAY REST
+🎂 BIRTHDAY REST
+🎂 BIRTHDAY REST
+Sun 18 Oct
+🎂 BIRTHDAY REST
+🎂 BIRTHDAY REST
+🎂 BIRTHDAY REST
+Mon 19 Oct
+Chem 🔴 Energy Changes — Exothermic/Endothermic Profiles
+Maths 🔴 Geometry — Sine & Cosine Rules
+Food 🟡 Food Science — Gelatinisation
+Tue 20 Oct
+Phys 🔴 Half-Life Calculations
+Spanish 🟡 T1 — Future Study & Careers
+Eng Lit 🟡 Macbeth — Act 4 + Power & Conflict
+Wed 21 Oct
+🎂 BIRTHDAY REST
+🎂 BIRTHDAY REST
+🎂 BIRTHDAY REST
+Thu 22 Oct
+Bio 🟡 Homeostasis — Nervous System & Reflex Arcs
+Maths 🔴 Quadratic Inequalities & Graphs
+RE 🟡 Crime & Punishment — Aims of Punishment
+Fri 23 Oct
+Chem 🔴 Energy Changes — Bond Energy
+Eng Lang 🟡 P1 Q5 — Narrative Structure & Hooks
+Food 🟡 Food Science — Gelatinisation/Starch
+Sat 24 Oct
+Bio 🟡 Homeostasis — Hormonal Control & Blood Glucose
+Eng Lang 🟡 P1 Q5 — Narrative Structure & Narrative Hook
+Food 🟡 Provenance — Food Miles & Sustainability
+Sun 25 Oct
+REST
+REST
+REST
+Mon 26 Oct
+Bio 🟡 Inheritance — DNA & Meiosis
+Maths 🔴 Completing the Square & Quadratic Formula
+Spanish 🔴 Conditional Tense Triggers
+Tue 27 Oct
+Eng Lit 🟡 Macbeth — Act 5: Kingship, Chaos & Resolution
+Phys 🔴 Newton's Laws Preview
+Soc 🟡 Crime — Social Construction & Statistics
+Wed 28 Oct
+Chem 🔴 Mock 1 Formula & Equation Recall
+Eng Lang 🟡 Mock 1 Timed Section A
+RE 🟡 Peace & Conflict — Just War
+Thu 29 Oct
+Maths 🔴 3D Trigonometry & Vectors
+Bio 🟡 Mock 1 Required Practicals
+Food 🟡 Mock 1 Theory Consolidation
+Fri 30 Oct
+Eng Lit 🟡 Macbeth — Mock 1 Core Quotes + P&C
+Phys 🟡 Mock 1 Equation Recall
+Spanish 🟡 Writing — 150-Word T1
+Sat 31 Oct
+Maths 🔴 Mock 1 Error Fix — Algebra & Number
+Chem 🔴 Mock 1 Core Calculations
+Spanish 🔴 Translation — English → Spanish
+Sun 01 Nov
+REST
+REST
+REST
+Mon 02 Nov
+Eng Lang 🟡 Mock 1 Section B Writing
+Spanish 🟡 Dictation — Higher Tier
+Maths 🟡 Non-Calculator Past Paper
+Tue 03 Nov
+Eng Lit 🟡 A Christmas Carol — Essay Plan & Context
+Bio 🟡 Mock 1 Definitions
+Food 🟡 Mock 1 8–10 Mark Technique
+Wed 04 Nov
+Chem 🟡 Formula & Titration Review
+Soc 🟡 12-Mark Essay Structure
+RE 🟡 12-Mark Structure
+Thu 05 Nov
+Eng Lang 🟡 Time Management Drill
+Phys 🟡 Core Practicals
+Maths 🟡 Calculator Past Paper
+Fri 06 Nov
+Eng Lit 🟡 Macbeth Essay Plan
+Bio 🟡 Mock 1 Light Review
+Food 🟡 Mock 1 Light Review
+Sat 07 Nov
+Maths 🔴 Geometry & Statistics Final Polish
+Chem 🔴 Bonding & Electrolysis Final Polish
+Spanish 🔴 Vocabulary & Grammar Final Check
+Sun 08 Nov
+REST
+REST
+REST
+Mon 09 Nov
+Eng Lang 🟢 Maintenance
+Spanish 🟢 Maintenance
+Maths 🟢 Maintenance
+Tue 10 Nov
+Eng Lit 🟢 Maintenance
+Bio 🟢 Maintenance
+Food 🟢 Maintenance
+Wed 11 Nov
+Chem 🟢 Maintenance
+Soc 🟢 Maintenance
+RE 🟢 Maintenance
+Thu 12 Nov
+Eng Lang 🟢 Maintenance
+Phys 🟢 Maintenance
+Maths 🟢 Maintenance
+Fri 13 Nov
+Eng Lit 🟢 Maintenance
+Bio 🟢 Maintenance
+Food 🟢 Maintenance
+Sat 14 Nov
+Maths 🔴 Functions & Graphs
+Chem 🔴 Rates of Reaction
+Spanish 🔴 T2 Popular Culture Introduction
+Sun 15 Nov
+REST
+REST
+REST
+Mon 16 Nov
+Eng Lang 🟡 Paper 2 Overview
+Spanish 🟡 T3/Communication — Social Media
+Maths 🟡 Algebraic Fractions Level 2
+Tue 17 Nov
+Eng Lit 🟡 AIC — Arthur Birling & Capitalism
+Bio 🟡 Homeostasis — Nervous System
+Food 🟡 Cereals, Breads & Milling
+Wed 18 Nov
+Chem 🟡 Rates & Collision Theory
+Soc 🟡 Social Stratification — Poverty & Inequality
+RE 🟡 Christianity — Worship & Rites
+Thu 19 Nov
+Eng Lang 🟡 P2 Q2 — Summary & Synthesis
+Phys 🟡 Forces & Hooke's Law
+Maths 🟡 Congruence & Similarity
+Fri 20 Nov
+Eng Lit 🟡 AIC — Sybil Birling & Responsibility
+Bio 🟡 Endocrine System & Hormones
+Food 🟡 Meat, Poultry & Alternatives
+Sat 21 Nov
+Maths 🔴 Conditional Probability & Trees
+Phys 🔴 Momentum & Conservation
+Spanish 🔴 T2 — Celebrity Culture & Opinions
+Sun 22 Nov
+REST
+REST
+REST
+Mon 23 Nov
+Eng Lang 🟡 P2 Q3 — Language Effects & Tone
+Spanish 🔴 Perfect Tense
+Maths 🟡 Bounds & Error Intervals
+Tue 24 Nov
+Eng Lit 🟡 AIC — Inspector Goole & Socialism
+Chem 🟡 Equilibrium
+Food 🟡 Dairy Production & Cheese
+Wed 25 Nov
+Phys 🟡 Newton's Laws
+Soc 🟡 Social Stratification — Welfare & Poverty
+RE 🟡 Islam — Holy Books & Prophethood
+Thu 26 Nov
+Eng Lang 🟡 P2 Q4 — Comparing Viewpoints
+Spanish 🔴 T2 Festivals & Traditions
+Maths 🟡 Quadratic Sequences
+Fri 27 Nov
+Eng Lit 🟡 AIC — Sheila & Eric
+Bio 🟡 DNA & Genome
+Food 🟡 Raising Agents
+Sat 28 Nov
+Maths 🔴 Advanced Vectors
+Phys 🔴 Waves — Speed & Types
+Spanish 🔴 Higher-Tier Grammar
+Sun 29 Nov
+REST
+REST
+REST
+Mon 30 Nov
+Eng Lang 🟡 P2 Q5 — Persuasive Speech
+Spanish 🟡 Celebrity Culture — Pros/Cons
+Maths 🟡 Composite & Inverse Functions
+Tue 01 Dec
+Eng Lit 🟡 AIC — 1912 vs 1945 Context
+Chem 🟡 Alkanes & Fractional Distillation
+Food 🟡 Special Diets
+Wed 02 Dec
+Phys 🟡 Electromagnetic Spectrum
+Soc 🟡 Crime — Functionalism & Marxism
+RE 🟡 Abortion & Fertility Treatment
+Thu 03 Dec
+Eng Lang 🟡 P2 Q2 — Information Retrieval
+Bio 🟡 Genetic Disorders & Punnett Squares
+Maths 🟡 Similar Shapes & Scale Factors
+Fri 04 Dec
+Eng Lit 🟡 Ozymandias — Power & Hubris
+Chem 🟡 Alkenes & Cracking
+Food 🟡 Costing & Meal Planning
+Sat 05 Dec
+Maths 🔴 Iteration & Numerical Methods
+Phys 🔴 Electromagnetism & Motor Effect
+Spanish 🔴 T3 Environment & Climate Change
+Sun 06 Dec
+REST
+REST
+REST
+Mon 07 Dec
+Eng Lang 🟡 P2 Q3 — Perspective & Tone
+Spanish 🔴 Comparatives & Superlatives
+Maths 🟡 Histograms
+Tue 08 Dec
+Eng Lit 🟡 London — Urban Decay & Oppression
+Bio 🟡 Variation & Natural Selection
+Food 🟡 Energy Needs & BMR/PAL
+Wed 09 Dec
+Chem 🟡 Alcohols & Carboxylic Acids
+Soc 🟡 Crime — Gender & Ethnicity
+RE 🟡 Baptism & Holy Communion
+Thu 10 Dec
+Eng Lang 🟡 P2 Q4 — Writer's Methods
+Phys 🟡 Life Cycle of Stars
+Maths 🟡 Advanced Circle Theorems
+Fri 11 Dec
+Eng Lit 🟡 Prelude — Nature's Power
+Bio 🟡 Ecology — Communities & Factors
+Food 🟡 Food Choice & Sensory Testing
+Sat 12 Dec
+Maths 🔴 Advanced Trigonometry
+Chem 🔴 Polymers
+Spanish 🔴 T3 — Rural vs City Living
+Sun 13 Dec
+REST
+REST
+REST
+Mon 14 Dec
+Eng Lang 🟡 Broadsheet Article Writing
+Spanish 🔴 Near Future vs Simple Future
+Maths 🟡 Compound Measures
+Tue 15 Dec
+Eng Lit 🟡 My Last Duchess
+Phys 🟡 Red-Shift & Big Bang
+Food 🟡 Packaging & Labelling
+Wed 16 Dec
+Chem 🟡 Purity & Chromatography
+Soc 🟡 Media Representation of Crime
+RE 🟡 Religion & Equality
+Thu 17 Dec
+Eng Lang 🟡 SPaG & Rhetorical Devices
+Bio 🟡 Trophic Levels & Biomass
+Maths 🟡 Triple Brackets & Surds
+Fri 18 Dec
+Eng Lit 🟡 Charge of the Light Brigade
+Phys 🟡 Generators & Transformers
+Food 🟡 Technological Developments
+Sat 19 Dec
+Maths 🔴 Simultaneous Equations with Quadratics
+Bio 🔴 Biodiversity & Environmental Change
+Spanish 🔴 Renewable Energy & Eco Living
+Sun 20 Dec
+REST
+REST
+REST
+Mon 21 Dec
+Eng Lang 🟡 P2 Q2 — Differences
+Spanish 🔴 Advanced Subjunctive
+Maths 🟡 Transformations & Matrices
+Tue 22 Dec
+Eng Lit 🟡 Exposure
+Chem 🟡 Evolution of Atmosphere
+Food 🟡 Culinary Traditions
+Wed 23 Dec
+Phys 🟡 Synoptic Equations
+Soc 🟡 Crime Prevention & Punishment
+RE 🟡 Pilgrimage & Church Ministries
+Thu 24 Dec
+🎄 CHRISTMAS REST
+🎄 CHRISTMAS REST
+🎄 CHRISTMAS REST
+Fri 25 Dec
+🎄 CHRISTMAS REST
+🎄 CHRISTMAS REST
+🎄 CHRISTMAS REST
+Sat 26 Dec
+🎄 CHRISTMAS REST
+🎄 CHRISTMAS REST
+🎄 CHRISTMAS REST
+Sun 27 Dec
+🎄 CHRISTMAS REST
+🎄 CHRISTMAS REST
+🎄 CHRISTMAS REST
+Mon 28 Dec
+Eng Lang 🟡 P2 Q4 — Tracing Ideas
+Spanish 🔴 Online Privacy & Cyberbullying
+Maths 🟡 Velocity-Time Graphs
+Tue 29 Dec
+Eng Lit 🟡 Storm on the Island
+Bio 🟡 Ecology Required Practical
+Food 🟡 Preservation Methods
+Wed 30 Dec
+Chem 🟡 Potable Water & LCAs
+Soc 🟡 Observation & Pilot Studies
+RE 🟡 Islam — Festivals
+Thu 31 Dec
+Eng Lang 🟡 Formal Letter
+Phys 🟡 Braking Distances
+Maths 🟡 Exponential Graphs
+Fri 01 Jan
+🎆 NEW YEAR REST
+🎆 NEW YEAR REST
+🎆 NEW YEAR REST
+Sat 02 Jan
+Maths 🔴 Surds & Rationalising
+Phys 🔴 Waves & Seismic Waves
+Spanish 🔴 Sustainable Tourism
+Sun 03 Jan
+REST
+REST
+REST
+Mon 04 Jan
+Eng Lang 🟡 P2 Timed Section A
+Spanish 🔴 Adjective Agreement & Word Order
+Maths 🟡 Algebraic Fractions
+Tue 05 Jan
+Eng Lit 🟡 Bayonet Charge
+Bio 🟡 Genetics & Inheritance
+Food 🟡 Emulsification
+Wed 06 Jan
+Chem 🟡 Sustainable Development & Corrosion
+Soc 🟡 Education — Class/Gender/Ethnicity
+RE 🟡 Church in Community
+Thu 07 Jan
+Eng Lang 🟡 P2 Timed Section B
+Phys 🟡 Electromagnetism & Generators
+Maths 🟡 Loci & Constructions
+Fri 08 Jan
+Eng Lit 🟡 Remains
+Bio 🟡 Ecology & Biodiversity
+Food 🟡 Aeration & Raising Agents
+Sat 09 Jan
+Maths 🔴 Quadratics — Formula & Completing Square
+Chem 🔴 Greenhouse Gases
+Spanish 🔴 T3 Writing — 150 Words
+Sun 10 Jan
+REST
+REST
+REST
+Mon 11 Jan
+Eng Lang 🟡 Mock 2 Full Paper
+Spanish 🟡 T3 Region & Housing
+Maths 🟡 Mock 2 Calculator Paper
+Tue 12 Jan
+Eng Lit 🟡 Poppies
+Phys 🟡 Space Physics Review
+Food 🟡 Mock 2 Food Science
+Wed 13 Jan
+Chem 🟡 Hardest Organic Topics
+Soc 🟡 Quantitative vs Qualitative
+RE 🟡 12-Mark Essay
+Thu 14 Jan
+Eng Lang 🟡 Error Analysis & SPaG
+Bio 🟡 Protein Synthesis
+Maths 🟡 Mock 2 Non-Calculator
+Fri 15 Jan
+Eng Lit 🟡 War Photographer
+Phys 🟡 Fleming's Rule
+Food 🟡 8–10 Mark Technique
+Sat 16 Jan
+Maths 🔴 Statistics & Box Plots Error Fix
+Bio 🔴 Ecology & Genetics Error Fix
+Spanish 🔴 Speaking — Role Play/Photo Card
+Sun 17 Jan
+REST
+REST
+REST
+Mon 18 Jan
+Eng Lang 🔴 P2 Q4 Synthesis
+Spanish 🔴 High-Tier Translation
+Maths 🔴 Iteration & Bounds
+Tue 19 Jan
+Eng Lit 🔴 AIC Mock 2 Essay + Quotes
+Chem 🔴 Equilibrium & Calculations
+Food 🟡 Mock 2 Final Polish
+Wed 20 Jan
+Phys 🔴 Waves & Electromagnetism
+Soc 🟡 Questionnaires & Interviews
+RE 🟡 Mock 2 Final Polish
+Thu 21 Jan
+Eng Lang 🟡 Mock 2 Light Review
+Bio 🟡 Mock 2 Light Review
+Maths 🟡 Mock 2 Light Review
+Fri 22 Jan
+Eng Lit 🟡 Mock 2 Light Review
+Chem 🟡 Mock 2 Light Review
+Food 🟡 Mock 2 Light Review
+Sat 23 Jan
+Maths 🔴 Advanced Similar Shapes & Vectors
+Phys 🔴 Synoptic Mechanics
+Spanish 🔴 General Conversation
+Sun 24 Jan
+REST
+REST
+REST
+Mon 25 Jan
+Eng Lang 🟡 Maintenance
+Spanish 🟡 Maintenance
+Maths 🟡 Maintenance
+Tue 26 Jan
+Eng Lit 🟡 Maintenance
+Bio 🟡 Maintenance
+Food 🟡 Maintenance
+Wed 27 Jan
+Chem 🟡 Maintenance
+Soc 🟡 Maintenance
+RE 🟡 Maintenance
+Thu 28 Jan
+Eng Lang 🟡 Maintenance
+Phys 🟡 Maintenance
+Maths 🟡 Maintenance
+Fri 29 Jan
+Eng Lit 🟡 Maintenance
+Bio 🟡 Maintenance
+Food 🟡 Maintenance
+Sat 30 Jan
+Maths 🔴 Tangent to a Circle
+Chem 🔴 Haber Process
+Spanish 🔴 Si Clauses + Higher Grammar
+Sun 31 Jan
+REST
+REST
+REST
+Mon 01 Feb
+Eng Lang 🟡 SPaG — Apostrophes & Homophones
+Spanish 🟡 T1 Education & Work
+Maths 🟡 Advanced Circle Theorems
+Tue 02 Feb
+Eng Lit 🟡 Macbeth — Supernatural & Guilt
+Bio 🟡 Biodiversity & Waste
+Food 🟡 Dietary Guidelines
+Wed 03 Feb
+Chem 🟡 NPK Fertilisers
+Soc 🟡 Families — Divorce/Cohabitation
+RE 🟡 Origins of Universe & Science
+Thu 04 Feb
+Eng Lang 🟡 P1 Q2 — Short Quote Embedding
+Phys 🟡 Energy & Circuit Power
+Maths 🟡 Factorising Quadratics
+Fri 05 Feb
+Eng Lit 🟡 Storm vs Exposure
+Bio 🟡 Global Warming & Deforestation
+Food 🟡 Raising Agents
+Sat 06 Feb
+Maths 🔴 3D Vectors & Geometrical Proof
+Phys 🔴 Nuclear Radiation
+Spanish 🔴 Mixed-Theme 150-Word Writing
+Sun 07 Feb
+REST
+REST
+REST
+Mon 08 Feb
+Eng Lang 🟡 P1 Q3 — Zooming In/Out
+Spanish 🟡 Translation — English → Spanish
+Maths 🟡 Reverse Percentages
+Tue 09 Feb
+Eng Lit 🟡 Charge vs Bayonet Charge
+Bio 🟡 Cells & Inheritance
+Food 🟡 Provenance
+Wed 10 Feb
+Chem 🟡 Quantitative Chemistry
+Soc 🟡 Education Reform Act
+RE 🟡 Animal Rights & Testing
+Thu 11 Feb
+Eng Lang 🟡 P1 Q4 — Method → Effect
+Phys 🟡 Particle Model & Density
+Maths 🟡 Algebraic Fractions
+Fri 12 Feb
+Eng Lit 🟡 ACC — Redemption
+Bio 🟡 Hormones & Homeostasis
+Food 🟡 Protein Complementation
+Sat 13 Feb
+Maths 🔴 Advanced Iteration
+Chem 🔴 Atmosphere & Equilibrium
+Spanish 🔴 High-Tier Translation
+Sun 14 Feb
+REST
+REST
+REST
+Mon 15 Feb
+Eng Lang 🟡 P2 Q2 — Synthesis
+Spanish 🟡 Subjunctive vs Indicative
+Maths 🟡 Circle Proofs
+Tue 16 Feb
+Eng Lit 🟡 AIC — Class Conflict
+Bio 🟡 Immune Response
+Food 🟡 Fortification
+Wed 17 Feb
+Chem 🟡 Bonding & Organic Properties
+Soc 🟡 Police/Courts/Sentencing
+RE 🟡 Christian Charities
+Thu 18 Feb
+Eng Lang 🟡 P2 Q3 — Tone
+Phys 🟡 Forces, Motion & Momentum
+Maths 🟡 Scatter Graphs
+Fri 19 Feb
+Eng Lit 🟡 Macbeth — Masculinity/Femininity
+Bio 🟡 Photosynthesis & Food Chains
+Food 🟡 Enzymes
+Sat 20 Feb
+Maths 🔴 Trig Graphs
+Bio 🔴Genetics/Evolution/Classification
+Spanish 🔴 Conditional Perfect
+Sun 21 Feb
+REST
+REST
+REST
+Mon 22 Feb
+Eng Lang 🟡 P2 Q4 — Comparative Structures
+Spanish 🟡 Listening — Timed Extract
+Maths 🟡 Inverse Proportion
+Tue 23 Feb
+Eng Lit 🟡 ACC — Supernatural & Time
+Chem 🟡 Rates & Catalysts
+Food 🟡 Vitamins A, D, E, K
+Wed 24 Feb
+Phys 🟡 Electricity & Transformers
+Soc 🟡 Welfare State & Poverty
+RE 🟡 Zakah & Khums
+Thu 25 Feb
+Eng Lang 🟡 P1 Q5 — Advanced Punctuation
+Bio 🟡 Required Practicals
+Maths 🟡 Area Under a Curve
+Fri 26 Feb
+Eng Lit 🟡 AIC — Time & Inspector
+Chem 🟡 Required Practicals
+Food 🟡 Food Security
+Sat 27 Feb
+Maths 🔴 Advanced Simultaneous Equations
+Phys 🔴 Required Practical Audit
+Spanish 🔴 Unprepared Photo Card
+Sun 28 Feb
+REST
+REST
+REST
+Mon 01 Mar
+Eng Lang 🟡 P2 Q5 — Form/Audience/Purpose
+Spanish 🟡 T1 Identity Review
+Maths 🟡 Exact Trig Values
+Tue 02 Mar
+Eng Lit 🟡 Checking Out Me History vs Tissue
+Bio 🟡 Monoclonal Antibodies
+Food 🟡 Gelatinisation vs Dextrinisation
+Wed 03 Mar
+Chem 🟡 Yield & Atom Economy
+Soc 🟡 Marxism vs Functionalism
+RE 🟡 Nature of God Quotes
+Thu 04 Mar
+Eng Lang 🟡 P1 Section A
+Phys 🟡 Specific Heat Capacity Practical
+Maths 🟡 Hard Sequences
+Fri 05 Mar
+Eng Lit 🟡 Macbeth — Kingship Quotes
+Bio 🟡 Protein Synthesis
+Food 🟡 Dietary Diseases
+Sat 06 Mar
+Maths 🔴 Tree Diagrams + Algebraic Fractions
+Chem 🔴 Equilibrium & Le Chatelier
+Spanish 🔴 Spanish → English Translation
+Sun 07 Mar
+REST
+REST
+REST
+Mon 08 Mar
+Eng Lang 🟡 P2 Section A
+Spanish 🟡 Environment & Global Issues
+Maths 🟡 Surds & Bounds
+Tue 09 Mar
+Eng Lit 🟡 ACC — Poverty Quotes
+Phys 🟡 Fleming's Left-Hand Rule
+Food 🟡 Processing
+Wed 10 Mar
+Chem 🟡 Organic Reactions
+Soc 🟡 Validity vs Reliability
+RE 🟡 Nature of Allah Quotes
+Thu 11 Mar
+Eng Lang 🟡 P1 Q5 Full Plan + Write
+Bio 🟡 Biomass Transfer Efficiency
+Maths 🟡 Vectors & Collinear Proof
+Fri 12 Mar
+Eng Lit 🟡 AIC — Responsibility Quotes
+Phys 🟡 Star Life Cycles
+Food 🟡 Microorganisms
+Sat 13 Mar
+Maths 🔴 Gradients & Tangents
+Bio 🔴 Meiosis vs Mitosis
+Spanish 🔴 Full Listening Past Paper
+Sun 14 Mar
+REST
+REST
+REST
+Mon 15 Mar
+Eng Lang 🟡 P2 Q5 Full Plan + Write
+Spanish 🟡 Careers & Future Plans
+Maths 🟡 Histograms & Median
+Tue 16 Mar
+Eng Lit 🟡 Unseen Poetry Methods
+Chem 🟡 Electrolysis
+Food 🟡 Sensory Analysis
+Wed 17 Mar
+Phys 🟡 Motor Effect & Loudspeakers
+Soc 🟡 Demographic Change
+RE 🟡 Peace & Conflict Quotes
+Thu 18 Mar
+Eng Lang 🟡 SPaG Full Audit
+Bio 🟡 Respiration & Metabolism
+Maths 🟡 Iteration
+Fri 19 Mar
+Eng Lit 🟡 Unseen Poetry Comparison
+Chem 🟡 NPK Fertilisers & Haber
+Food 🟡 Minerals
+Sat 20 Mar
+Maths 🔴 Sine/Cosine Rule with 3D
+Phys 🔴 Electromagnetism & Transformers
+Spanish 🔴 Preterite Irregulars Translation
+Sun 21 Mar
+REST
+REST
+REST
+Mon 22 Mar
+Eng Lang 🟡 P1 Q2/Q3 Speed Drill
+Spanish 🟡 Speaking Fluency
+Maths 🟡 Pressure/Force/Area
+Tue 23 Mar
+Eng Lit 🟡 Macbeth — Macbeth vs Banquo
+Bio 🟡 Core Equations
+Food 🟡 Specification Flashcards Part 1
+Wed 24 Mar
+Chem 🟡 Formula & Ions Recall
+Soc 🟡 Sociologists Recall Part 1
+RE 🟡 Quotes Recall Part 1
+Thu 25 Mar
+Eng Lang 🟡 P1 Q4 Speed Drill
+Phys 🟡 P1 Equations
+Maths 🟡 Loci
+Fri 26 Mar
+🐣 EASTER REST
+🐣 EASTER REST
+🐣 EASTER REST
+Sat 27 Mar
+🐣 EASTER REST
+🐣 EASTER REST
+🐣 EASTER REST
+Sun 28 Mar
+🐣 EASTER REST
+🐣 EASTER REST
+🐣 EASTER REST
+Mon 29 Mar
+🐣 EASTER REST
+🐣 EASTER REST
+🐣 EASTER REST
+Tue 30 Mar
+Eng Lit 🟡 AIC — Inspector's Rhetoric
+Phys 🟡 P2 Core Equations
+Food 🟡 Exam Strategy
+Wed 31 Mar
+Chem 🟡 Rates vs Equilibrium
+Soc 🟡 Sociologists Recall Part 2
+RE 🟡 Quotes Recall Part 2
+Thu 01 Apr
+Eng Lang 🟡 P2 Q3 — Rhetoric
+Phys 🟡 Final Practical Audit
+Maths 🟡 Circle Tangent
+Fri 02 Apr
+Eng Lit 🟡 Lowest-Confidence Poetry
+Bio 🟡 P1 Full Past Paper
+Food 🟡 P1 Full Past Paper
+Sat 03 Apr
+Maths 🔴 P1 Error Fix
+Chem 🔴 P1 Full Past Paper
+Spanish 🔴 Reading Full Paper
+Sun 04 Apr
+REST
+REST
+REST
+Mon 05 Apr
+Eng Lang 🟡 P1 Full Paper
+Spanish 🟡 Reading Error Fix
+Maths 🟡 P1 Non-Calculator
+Tue 06 Apr
+Eng Lit 🟡 P1 Full Paper
+Bio 🟡 P1 Error Fix
+Food 🟡 Theory Error Fix
+Wed 07 Apr
+Chem 🟡 P1 Error Fix
+Soc 🟡 P1 Full Paper
+RE 🟡 P1 Full Paper
+Thu 08 Apr
+Eng Lang 🟡 P1 Error Fix
+Phys 🟡 P1 Full Paper
+Maths 🟡 P1 Error Fix
+Fri 09 Apr
+Eng Lit 🟡 P1 Error Fix
+Bio 🟡 P2 Full Paper
+Food 🟡 Nutrition Triage
+Sat 10 Apr
+Maths 🔴 P2 Calculator Paper
+Chem 🔴 P2 Full Paper
+Spanish 🔴 Dictation + Translation
+Sun 11 Apr
+REST
+REST
+REST
+Mon 12 Apr
+Eng Lang 🟡 P2 Full Paper
+Spanish 🟡 Listening Full Paper
+Maths 🟡 P2 Error Fix
+Tue 13 Apr
+Eng Lit 🟡 P2 Full Paper
+Bio 🟡 P2 Error Fix
+Food 🟡 Food Science Triage
+Wed 14 Apr
+Chem 🟡 P2 Error Fix
+Soc 🟡 P1 Error Fix
+RE 🟡 P1 Error Fix
+Thu 15 Apr
+Eng Lang 🟡 P2 Error Fix
+Phys 🟡 P1 Error Fix
+Maths 🟡 P3 Calculator
+Fri 16 Apr
+Eng Lit 🟡 P2 Error Fix
+Bio 🟡 Hardest 5% Triage
+Food 🟡 Provenance Triage
+Sat 17 Apr
+Maths 🔴 P3 Error Fix
+Chem 🔴 Hardest 5% Triage
+Spanish 🔴 Speaking — Role Play
+Sun 18 Apr
+REST
+REST
+REST
+Mon 19 Apr
+Eng Lang 🟡 SPaG Final Check
+Spanish 🟡 Listening Error Fix
+Maths 🟡 Proofs
+Tue 20 Apr
+Eng Lit 🟡 Macbeth — Form & Structure
+Phys 🟡 P2 Full Paper
+Food 🟡 12-Mark Technique
+Wed 21 Apr
+Chem 🟡 Core Formulas
+Soc 🟡 P2 Full Paper
+RE 🟡 P2 Full Paper
+Thu 22 Apr
+Eng Lang 🟡 Q5 Structural Audit
+Phys 🟡 P2 Error Fix
+Maths 🟡 Vectors
+Fri 23 Apr
+Eng Lit 🟡 ACC — Form & Structure
+Bio 🟡 Core Equations
+Food 🟡 Full Specification Audit
+Sat 24 Apr
+Maths 🔴 Iteration & Bounds
+Chem 🔴 Core Ions
+Spanish 🔴 General Conversation
+Sun 25 Apr
+REST
+REST
+REST
+Mon 26 Apr
+Eng Lang 🟡 P1 Q2/Q3 — Quote Embedding
+Spanish 🟡 Writing — 150 Words
+Maths 🔴 Geometry Vectors
+Tue 27 Apr
+Eng Lit 🟡 AIC — Form & Structure
+Bio 🔴 Endocrine/Hormones
+Food 🟡 Exam Strategy
+Wed 28 Apr
+Chem 🔴 Electrolysis
+Soc 🟡 P2 Error Fix
+RE 🟡 P2 Error Fix
+Thu 29 Apr
+Eng Lang 🟡 P2 Q2/Q4 — Synthesis
+Phys 🔴 Electromagnetism
+Maths 🟡 Exam Strategy
+Fri 30 Apr
+Eng Lit 🟡 Unseen Poetry Final Polish
+Bio 🟡 Exam Strategy
+Food 🟡 Exam Strategy
+Sat 01 May
+Maths 🔴 P1 Non-Calculator Final Blitz
+Bio 🔴 P1 Final Blitz
+Eng Lit 🔴 Macbeth + ACC Final Blitz
+Sun 02 May
+REST
+REST
+REST
+Mon 03 May
+Maths 🟡 P1 Exam Technique
+Bio 🟡 Practical Review
+Eng Lit 🟡 Final Quotes
+Tue 04 May
+Soc 🟡 P1 Families & Education
+Spanish 🟡 Speaking
+RE 🟡 P1 Final Review
+Wed 05 May
+Chem 🟡 P1 Core Content
+Eng Lit 🟡 Macbeth Context
+Bio 🟡 P1 Weakest Topics
+Thu 06 May
+Eng Lang 🟡 P1 Q5
+Phys 🟡 P1 Content
+Maths 🟡 P1 Formula Check
+Fri 07 May
+Eng Lit 🔴 Macbeth + ACC
+Bio 🔴 P1 Target Practice
+Soc 🔴 P1 Essay Structure
+Sat 08 May
+Maths 🔴 P1 Hardest Topics
+Bio 🔴 P1 Error Fix
+Eng Lit 🔴 P1 Target Practice
+Sun 09 May
+REST
+REST
+REST
+Mon 10 May
+Bio 🔴 Final Review
+Soc 🔴 P1 Final Review
+Eng Lit 🔴 P1 Final Review
+Tue 11 May
+📝 BIOLOGY PAPER 1
+Soc 🟡 Final P1 Preparation
+Eng Lit 🟡 Final P1 Preparation
+Wed 12 May
+📝 ENGLISH LITERATURE PAPER 1
+Soc 🔴 P1 Final Review
+RE 🟡 Final P1 Preparation
+Thu 13 May
+RE 🔴 P1 Final Review
+Maths 🔴 P1 Final Polish
+Chem 🟡 P1 Final Review
+Fri 14 May
+📝 MATHS PAPER 1 — HIGHER
+Chem 🟡 P1 Final Review
+Eng Lit 🟡 P2 Preparation
+Sat 15 May
+Chem 🔴 P1 Final Blitz
+RE 🟡 P2 Preparation
+Eng Lit 🔴 P2 AIC + Poetry
+Sun 16 May
+REST
+REST
+REST
+Mon 17 May
+📝 CHEMISTRY PAPER 1
+Soc 🟡 P2 Final Review
+Eng Lit 🟡 P2 Final Review
+Tue 18 May
+📝 SOCIOLOGY PAPER 2
+Eng Lit 🔴 P2 Quotes
+RE 🟡 P2 Final Review
+Wed 19 May
+📝 ENGLISH LITERATURE PAPER 2
+RE 🟡 P2 Final Review
+Eng Lang 🟡 P1 Preparation
+Thu 20 May
+RE 🔴 Final 24-Hour Review
+Eng Lang 🟡 P1 Q4/Q5
+Phys 🟡 P1 Final Review
+Fri 21 May
+📝 RE PAPER 1/2
+Eng Lang 🔴 P1 Final Polish
+Phys 🟡 P1 Final Content
+Sat 22 May
+Eng Lang 🔴 P1 Full Practice
+Phys 🔴 Hardest P1 Topics
+Maths 🔴 P2 Hardest Topics
+Sun 23 May
+REST
+REST
+REST
+Mon 24 May
+📝 ENGLISH LANGUAGE PAPER 1
+📝 FOOD EXAM
+Phys 🟡 P1 Final Review
+Tue 25 May
+📝 PHYSICS PAPER 1
+Maths 🟡 P2 Preparation
+Spanish 🟡 Speaking
+Wed 26 May
+Maths 🟡 P2 Probability & Statistics
+Spanish 🟡 Speaking Recall
+Eng Lang 🟡 P2 Preparation
+Thu 27 May
+📝 MATHS PAPER 2 — HIGHER
+Eng Lang 🟡 P2 Q2/Q4
+Spanish 🟡 Reading/Listening
+Fri 28 May
+Bio 🟡 P2 Homeostasis
+Chem 🟡 P2 Organic Chemistry
+Eng Lang 🟡 P2 Q5
+Sat 29 May
+Maths 🔴 P3 Algebraic Proof
+Chem 🔴 Atmosphere & Resources
+Spanish 🔴 Local Environment
+Sun 30 May
+REST
+REST
+REST
+Mon 31 May
+Eng Lang 🟡 P2 Full Practice
+Bio 🟡 P2 Core Topics
+Spanish 🟡 Speaking
+Tue 01 Jun
+Eng Lang 🟡 P2 Q2/Q4
+Bio 🟡 Genetics/Ecology
+Chem 🟡 Calculations
+Wed 02 Jun
+Eng Lang 🟡 P2 Q5
+Bio 🟡 Required Practicals
+Chem 🟡 Organic Chemistry
+Thu 03 Jun
+Eng Lang 🟡 Full P2 Timed Paper
+Bio 🟡 Homeostasis
+Maths 🟡 P3 Advanced Graphs
+Fri 04 Jun
+Eng Lang 🟡 P2 Error Fix
+Bio 🟡 Weakest Topics
+Spanish 🟡 Listening/Reading
+Sat 05 Jun
+Eng Lang 🔴 P2 Full Paper
+Bio 🔴 P2 Hardest Topics
+Maths 🔴 P3 Functions
+Sun 06 Jun
+REST
+REST
+REST
+Mon 07 Jun
+Eng Lang 🔴 P2 Final Review
+Spanish 🟡 Final Listening/Reading
+Bio 🟡 Light Review
+Tue 08 Jun
+📝 ENGLISH LANGUAGE PAPER 2
+Spanish 🟡 Final Listening/Reading
+Bio 🟡 P2 Review
+Wed 09 Jun
+📝 SPANISH LISTENING + READING
+Bio 🔴 P2 Final Content
+Maths 🟡 P3 Preparation
+Thu 10 Jun
+📝 BIOLOGY PAPER 2
+Maths 🟡 P3 Techniques
+Chem 🟡 P2 Calculations
+Fri 11 Jun
+Chem 🟡 Organic Chemistry
+Maths 🟡 P3 Statistics
+Spanish 🟡 Writing Structure
+Sat 12 Jun
+Maths 🔴 P3 Full Blitz
+Chem 🔴 P2 Hardest Topics
+Spanish 🔴 150-Word Final Polish
+Sun 13 Jun
+REST
+REST
+REST
+Mon 14 Jun
+📝 MATHS PAPER 3 — HIGHER
+Chem 🟡 P2 Final Preparation
+Spanish 🟡 Writing Final Structure
+Tue 15 Jun
+📝 CHEMISTRY PAPER 2
+Spanish 🟡 Final Writing Preparation
+Phys 🟡 P2 Final Content
+Wed 16 Jun
+Spanish 🟡 Final Writing Review
+Phys 🟡 Required Practicals
+Phys 🔴 Electromagnetism
+Thu 17 Jun
+Spanish 🔴 Final 24-Hour Review
+Phys 🔴 Forces
+Phys 🟡 Equations
+Fri 18 Jun
+📝 PHYSICS PAPER 2
+🎉 GCSE REVISION COMPLETE
+🎉 GCSE REVISION COMPLETE
+Sat 19 Jun
+NO REVISION
+NO REVISION
+NO REVISION
+Sun 20 Jun
+REST
+REST
+REST
+Mon 21 Jun
+NO REVISION
+NO REVISION
+NO REVISION
+Tue 22 Jun
+NO REVISION
+NO REVISION
+NO REVISION
+Wed 23 Jun
+JCQ CONTINGENCY DAY — KEEP FREE
+KEEP FREE
+KEEP FREE
+Thu 24 Jun
+NO REVISION
+NO REVISION
+NO REVISION
+Fri 25 Jun
+NO REVISION
+NO REVISION
+NO REVISION
+Sat 26 Jun
+NO REVISION
+NO REVISION
+NO REVISION
+Sun 27 Jun
+REST
+REST
+REST
+Mon 28 Jun
+NO REVISION
+NO REVISION
+NO REVISION
+Tue 29 Jun
+NO REVISION
+NO REVISION
+NO REVISION
+Wed 30 Jun
+NO REVISION
+NO REVISION
+NO REVISION`;
+
+/* ==========================================
+   2. APP LOGIC & DATA PARSER
+============================================= */
+
+let masterTasks = [];
+let userOverrides = JSON.parse(localStorage.getItem('userOverrides')) || [];
+let homeworkLog = JSON.parse(localStorage.getItem('homeworkLog')) || [];
+let activeTaskIndex = null;
+
+// The engine that parses your massive text block into exact dates and topics
+function parseTimetable() {
+    const lines = rawTimetableText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0 && l !== 'Date' && !l.startsWith('Subject'));
+    
+    const months = { 'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'May':'05', 'Jun':'06', 'Jul':'07', 'Aug':'08', 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12' };
+    let currentYear = 2026;
+    let prevMonthNum = 10;
+    
+    let idCounter = 1;
+
+    for (let i = 0; i < lines.length; i += 4) {
+        let dateLine = lines[i]; // e.g., "Mon 05 Oct"
+        if (!dateLine) break;
+
+        let parts = dateLine.split(' ');
+        let dayNum = parts[1];
+        let monthName = parts[2];
+        let monthNum = parseInt(months[monthName]);
+        
+        // Year rollover logic
+        if (prevMonthNum === 12 && monthNum === 1) currentYear++;
+        prevMonthNum = monthNum;
+        
+        let isoDate = `${currentYear}-${months[monthName]}-${dayNum.padStart(2, '0')}`;
+        
+        let dailyTasks = [lines[i+1], lines[i+2], lines[i+3]];
+        
+        dailyTasks.forEach((taskStr, index) => {
+            if(!taskStr) return;
+            let taskObj = {
+                id: idCounter++,
+                date: isoDate,
+                originalDate: isoDate,
+                rawText: taskStr,
+                status: 'pending' // pending, completed, catchup
+            };
+
+            // Detect rest/exams
+            if (taskStr.includes('REST') || taskStr.includes('KEEP FREE') || taskStr.includes('NO REVISION') || taskStr.includes('🎉')) {
+                taskObj.type = 'rest';
+            } else if (taskStr.includes('📝')) {
+                taskObj.type = 'exam';
+            } else {
+                taskObj.type = 'study';
+                // Extract RAG and Subject vs Topic
+                let ragMatch = taskStr.match(/(🔴|🟡|🟢)/);
+                if (ragMatch) {
+                    let emoji = ragMatch[0];
+                    taskObj.rag = emoji === '🔴' ? 'red' : emoji === '🟡' ? 'amber' : 'green';
+                    let splitArr = taskStr.split(emoji);
+                    taskObj.subject = splitArr[0].trim();
+                    taskObj.topic = splitArr[1] ? splitArr[1].replace(/^—\s*/, '').trim() : '';
+                } else {
+                    taskObj.rag = 'none';
+                    taskObj.subject = 'Revision';
+                    taskObj.topic = taskStr;
+                }
+            }
+            masterTasks.push(taskObj);
+        });
+    }
+
+    // Apply user overrides (saved in LocalStorage)
+    userOverrides.forEach(override => {
+        let match = masterTasks.find(t => t.id === override.id);
+        if(match) {
+            match.status = override.status;
+            match.rag = override.rag;
+            match.date = override.date; // if moved to catchup/different day
+        }
+    });
+}
+
+function saveOverrides() {
+    let toSave = masterTasks.filter(t => t.status !== 'pending' || t.date !== t.originalDate || t.ragChanged).map(t => ({
+        id: t.id, status: t.status, rag: t.rag, date: t.date
+    }));
+    localStorage.setItem('userOverrides', JSON.stringify(toSave));
+    localStorage.setItem('homeworkLog', JSON.stringify(homeworkLog));
+}
+
+function getTodayString() {
+    // Reads real user clock.
+    let today = new Date();
+    // Safety check: if testing this in 2024, default to first day of schedule for demo purposes.
+    if (today.getFullYear() < 2026) {
+        return '2026-10-05';
+    }
+    let iso = today.toISOString().split('T')[0];
+    return iso;
+}
+
+function renderToday() {
+    let todayIso = getTodayString();
+    
+    // Formatting date beautifully for display
+    let d = new Date(todayIso);
+    let options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('today-date-display').innerText = d.toLocaleDateString('en-GB', options) + " (Today)";
+    
+    // Set Phase Banner
+    let phase = "Phase 1: Mock 1 Prep";
+    if (d > new Date('2026-11-15')) phase = "Phase 2: Mock 2 Prep";
+    if (d > new Date('2027-02-28')) phase = "Phase 3: Final Consolidation";
+    if (d > new Date('2027-05-01')) phase = "Phase 4: Real GCSE Exams";
+    document.getElementById('phase-banner').innerText = phase;
+
+    let todaysTasks = masterTasks.filter(t => t.date === todayIso && t.status !== 'catchup');
+    let container = document.getElementById('today-tasks');
+    container.innerHTML = '';
+
+    if (todaysTasks.length === 0) {
+        container.innerHTML = '<div class="card">No revision scheduled for this date. Check the timetable!</div>';
+        return;
+    }
+
+    todaysTasks.forEach(t => {
+        let div = document.createElement('div');
+        div.className = 'card task-card ' + (t.type === 'rest' || t.type === 'exam' ? 'task-rest' : 'rag-' + t.rag);
+        
+        if (t.type === 'rest' || t.type === 'exam') {
+            div.innerHTML = `<div class="task-subject" style="font-size: 1.3em;">${t.rawText}</div>`;
+        } else {
+            let ragLabel = t.rag === 'red' ? '🔴 Weak' : t.rag === 'amber' ? '🟡 Okay' : '🟢 Confident';
+            div.innerHTML = `
+                <span class="badge ${t.rag}">${ragLabel}</span>
+                <div class="task-subject">${t.subject}</div>
+                <div class="task-topic">${t.topic}</div>
+                ${t.status === 'completed' ? `<span class="badge green">✅ Completed</span>` : `<button onclick="openTaskModal(${t.id})" style="background: var(--primary); color: white; width: 100%;">Action / Complete</button>`}
+            `;
+        }
+        container.appendChild(div);
+    });
+}
+
+function renderCatchup() {
+    let list = masterTasks.filter(t => t.status === 'catchup');
+    let container = document.getElementById('catchup-tasks');
+    container.innerHTML = list.length === 0 ? '<p>No pending catch-up tasks! You are completely up to date.</p>' : '';
+    
+    list.forEach(t => {
+        let div = document.createElement('div');
+        div.className = `card task-card rag-${t.rag}`;
+        div.innerHTML = `
+            <span class="badge red">Originally: ${t.originalDate}</span>
+            <div class="task-subject">${t.subject}</div>
+            <div class="task-topic">${t.topic}</div>
+            <div class="btn-group">
+                <button class="btn-complete" onclick="markComplete(${t.id})">✅ Done</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderHomework() {
+    let container = document.getElementById('homework-list');
+    container.innerHTML = homeworkLog.length === 0 ? '<p>No homework logged.</p>' : '';
+    homeworkLog.forEach((h, index) => {
+        let div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+            <div class="task-subject">${h.subject}</div>
+            <div class="task-topic">${h.task}</div>
+            <div style="color: var(--red); font-size: 0.9em; margin-bottom: 10px;">Due: ${h.due}</div>
+            <button class="btn-complete" onclick="deleteHomework(${index})">✅ Mark Complete</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function openTaskModal(id) {
+    activeTaskIndex = id;
+    let t = masterTasks.find(x => x.id === id);
+    document.getElementById('modal-subject').innerText = t.subject;
+    document.getElementById('modal-topic').innerText = t.topic;
+    document.getElementById('task-modal').classList.add('active');
+}
+
+function updateRAG(color) {
+    let t = masterTasks.find(x => x.id === activeTaskIndex);
+    t.rag = color;
+    t.ragChanged = true;
+    t.status = 'completed'; // assumes changing RAG implies finishing the review
+    saveOverrides();
+    document.getElementById('task-modal').classList.remove('active');
+    renderToday();
+}
+
+function moveToCatchup() {
+    let t = masterTasks.find(x => x.id === activeTaskIndex);
+    t.status = 'catchup';
+    saveOverrides();
+    document.getElementById('task-modal').classList.remove('active');
+    renderToday();
+}
+
+function markComplete(id) {
+    let t = masterTasks.find(x => x.id === id);
+    t.status = 'completed';
+    saveOverrides();
+    renderToday();
+    renderCatchup();
+}
+
+function saveHomework() {
+    let sub = document.getElementById('hw-subject').value;
+    let task = document.getElementById('hw-task').value;
+    let due = document.getElementById('hw-due').value;
+    if(sub && task) {
+        homeworkLog.push({ subject: sub, task: task, due: due });
+        saveOverrides();
+        document.getElementById('hw-modal').classList.remove('active');
+        renderHomework();
+    }
+}
+
+function deleteHomework(index) {
+    homeworkLog.splice(index, 1);
+    saveOverrides();
+    renderHomework();
+}
+
+function exportData() {
+    let data = {
+        overrides: userOverrides,
+        homework: homeworkLog
+    };
+    let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = "GCSE_Planner_Backup.json";
+    a.click();
+}
+
+function factoryReset() {
+    if(confirm("Are you sure? This will delete all your completions and catch-up items.")) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+function navigate(viewId) {
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('#sidebar a').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById('view-' + viewId).classList.add('active');
+    document.getElementById('nav-' + viewId).classList.add('active');
+
+    if (viewId === 'today') renderToday();
+    if (viewId === 'catchup') renderCatchup();
+    if (viewId === 'homework') renderHomework();
+    if (viewId === 'progress') {
+        let completed = masterTasks.filter(t => t.status === 'completed').length;
+        let total = masterTasks.filter(t => t.type === 'study').length;
+        document.getElementById('stats-container').innerHTML = `
+            <h2>Global Progress</h2>
+            <p>You have completed <b>${completed}</b> out of <b>${total}</b> study sessions this year.</p>
+            <progress value="${completed}" max="${total}" style="width: 100%; height: 20px;"></progress>
+        `;
+    }
+}
+
+// INITIALIZATION
+window.onload = () => {
+    parseTimetable();
+    renderToday();
+};
+</script>
+</body>
+</html>
